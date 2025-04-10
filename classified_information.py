@@ -61,13 +61,13 @@ class classified_information():
 
         # Imputeren van NA's:
         X_ordinal_imputed = self.ordinal_imputer.transform(X_ordinal)
-        X_continuous_imputed = self.continuous_imputer.fit_transform(X_continuous)
+        X_continuous_imputed = self.continuous_imputer.transform(X_continuous)
 
         # Onehot encode de catagrorische ordinale features:
         X_ordinal_encoded = self.onehot_encoder.transform(X_ordinal_imputed)
 
         # Niet alle continue waarden hebben de zelfde eenheid, schaal ze:
-        X_continuous_scaled = self.continuous_scaler.fit_transform(X_continuous_imputed)
+        X_continuous_scaled = self.continuous_scaler.transform(X_continuous_imputed)
 
         # Combineer features:
         X = np.concatenate((X_ordinal_encoded, X_continuous_scaled), axis=1)
@@ -82,7 +82,7 @@ class classified_information():
         return prediction
     
 if __name__ == '__main__':
-    
+
     test_data = "competition-train-noclass(1).csv"
 
     prediction_results = classified_information().predict(filename=test_data)
