@@ -2,6 +2,9 @@
 Model class van Ivar en Floris
 MHA predictor
 Datum: 10-04-2025
+
+Gebruik: print(classified_information().predict(filename=test_data))
+
 """
 
 import pandas as pd
@@ -11,7 +14,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 from sklearn.experimental import enable_iterative_imputer
-
 from sklearn.impute import IterativeImputer
 from sklearn.svm import SVC
 import joblib
@@ -25,7 +27,7 @@ class classified_information():
         # Laad alle pipeline objecten:
         model_pipeline = joblib.load(pipeline_path) 
 
-        # SVC model: SVC(C=0.03, class_weight='balanced', kernel='linear', tol=0.1)
+        # Model: AdaBoostClassifier(learning_rate=0.01, n_estimators=350, random_state=1)
         self.model = model_pipeline["model"]
 
         # Imputers:
@@ -42,7 +44,7 @@ class classified_information():
         self.all_features = self.features_ordinal + self.features_continuous
 
 
-    def predict(self, filename="competition-train-noclass(1).csv"):
+    def predict(self, filename="competition-test.csv"):
         """
             Voorspel de uitkomst van de "MHS" kolom van de gegeven test dataset.
         """
@@ -77,8 +79,9 @@ class classified_information():
         prediction = prediction.astype(dtype=bool)
 
 
-        #print(self.model)
+        #print(prediction.shape)
         #print(type(prediction))
+        #print(type(self.model))
         return prediction
     
 if __name__ == '__main__':
