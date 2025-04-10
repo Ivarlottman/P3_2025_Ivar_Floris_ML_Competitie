@@ -25,9 +25,25 @@ class i_f_classy():
     """
 
     """
-    def __init__(self, model_path="model.joblib"):
-        self.model = joblib.load(model_path)         
-    
+    def __init__(self, pipeline_path="model.joblib"):
+        # Laad alle pipeline objecten:
+        model_pipeline = joblib.load(pipeline_path) 
+
+        # SVC model:
+        self.model = model_pipeline["model"]
+
+        # Imputers:
+        self.ordinal_imputer = model_pipeline["ordinal_imputer"]
+        self.continuous_imputer =  model_pipeline["continuous_imputer"]
+
+        # Encoders:
+        self.onehot_encoder =  model_pipeline["onehot_encoder"]
+        self.continuous_scaler = model_pipeline["continuous_scaler"]
+
+        # Features:
+        self.features_ordinal = model_pipeline["features_ordinal"]
+        self.features_continuous = model_pipeline["features_continuous"]
+        self.all_features = self.features_ordinal + self.features_continuous
 
 
     def predict(self, filename="competition-train-noclass(1).csv"):
@@ -41,51 +57,35 @@ class i_f_classy():
         mhs_df["sex"] = mhs_df["sex"].replace({"M": '0', "V": '1'})
         mhs_df[["slaapscore", "bmi"]] = mhs_df[["slaapscore", "bmi"]].round(1)
 
-        # Features selecteren:
-        features_ordinal = ["beweging-per-week", "tv-per-dag","sex", "astigmatisme", "hypertensie"]
-        features_continuous = ["bmi", "leeftijd", "lengte", "bovendruk", "onderdruk", "slaapscore", "gewicht", "maandinkomen"]
-
-        to_predict = ["MHS"]
-
-        all_features = features_ordinal + features_continuous
-
-        y = mhs_df[to_predict]
-        X_not_imputed = mhs_df[all_features]
+        X_not_imputed = mhs_df[self.all_features]
 
 
-        X_ordinal = X_not_imputed[features_ordinal]
-        X_continuous = X_not_imputed[features_continuous]
+        X_ordinal = X_not_imputed[self.features_ordinal]
 
-        ordinal_feature_imputer = SimpleImputer(strategy='most_frequent')
-        X_ordinal_imputed = ordinal_feature_imputer.fit_transform(X_ordinal)
+        X_continuous = X_not_imputed[self.features_continuous]
 
-        onehot_encoder = OrdinalEncoder(
-            categories=[[1,2,3,4,5,6,7,8,9,10], [1,2,3,4,5,6,7], [0,1], [0,1], [0,1]],
-            handle_unknown='use_encoded_value', 
-            unknown_value=-1
-        )
+        
+        X_ordinal_imputed = self.ordinal_imputer.transform(X_ordinal)
 
-        X_ordinal_encoded = onehot_encoder.fit_transform(X_ordinal_imputed)
-
-        continuous_imputer = KNNImputer(n_neighbors=2, weights="uniform")
-        X_continuous_imputed = continuous_imputer.fit_transform(X_continuous)
+        X_ordinal_encoded = self.onehot_encoder.transform(X_ordinal_imputed)
+        
+        X_continuous_imputed = self.continuous_imputer.fit_transform(X_continuous)
 
         # Niet alle continue waarden hebben de zelfde eenheid, schaal ze:
-        continuous_scaler = StandardScaler()
-        X_continuous_scaled = continuous_scaler.fit_transform(X_continuous_imputed)
+        X_continuous_scaled = self.continuous_scaler.fit_transform(X_continuous_imputed)
 
         # Combineer features:
         X = np.hstack((X_ordinal_encoded, X_continuous_scaled))
 
         prediction = self.model.predict(X)
-
-        #print(type(prediction))
+        #print(self.model)
+        print(type(prediction))
         return prediction
     
 if __name__ == '__main__':
-    saved_model = "super_model.joblib"
+    saved_model = "model_pipeline.joblib"
     test_data = "competition-train-noclass(1).csv"
 
-    classifier = i_f_classy(model_path=saved_model)
+    classifier = i_f_classy(pipeline_path=saved_model)
     prediction_results = classifier.predict(filename=test_data)
     print(prediction_results)
