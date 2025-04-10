@@ -1,37 +1,31 @@
 """
 Model class van Ivar en Floris
+MHA predictor
+Datum: 10-04-2025
 """
 
 import pandas as pd
-from matplotlib import pyplot as plt
 import numpy as np
-from scipy import stats
 import sklearn
-from sklearn.model_selection import train_test_split
-from sklearn.impute import KNNImputer
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 from sklearn.experimental import enable_iterative_imputer
+
+from sklearn.impute import IterativeImputer
 from sklearn.svm import SVC
-from sklearn.metrics import RocCurveDisplay
 import joblib
 
 
-class i_f_classy():
-    """
+class classified_information():
 
-    """
-    def __init__(self, pipeline_path="model.joblib"):
+
+    def __init__(self, pipeline_path="model_pipeline.joblib"):
+
         # Laad alle pipeline objecten:
         model_pipeline = joblib.load(pipeline_path) 
 
         # SVC model: SVC(C=0.03, class_weight='balanced', kernel='linear', tol=0.1)
-
         self.model = model_pipeline["model"]
 
         # Imputers:
@@ -88,9 +82,9 @@ class i_f_classy():
         return prediction
     
 if __name__ == '__main__':
-    saved_model = "model_pipeline.joblib"
+    
     test_data = "competition-train-noclass(1).csv"
 
-    classifier = i_f_classy(pipeline_path=saved_model)
-    prediction_results = classifier.predict(filename=test_data)
+    prediction_results = classified_information().predict(filename=test_data)
+
     print(prediction_results)
